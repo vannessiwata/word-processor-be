@@ -15,7 +15,6 @@ return new class extends Migration
             $table->uuid('document_detail_id')->primary();
             $table->uuid('document_id');
             $table->text('content');
-            $table->boolean('is_shared')->default(false);
             $table->timestamps();
 
             $table->foreign('document_id')->references('document_id')->on('documents');

@@ -20,8 +20,13 @@ class DocumentController extends Controller
     {
         $userId = $request->query('userId');
         $search = $request->query('search');
+
+        $user = User::where('user_id', $userId)->first();
+
+        if($user == null) return response()->json("User tidak ditemukan", 404);
     
         $postsQuery = Document::where('user_id', $userId)->orderBy('updated_at', 'DESC');
+
         $documentSharedQuery = SharedDocument::where('user_id', $userId)->orderBy('updated_at', 'DESC');
     
         if ($search !== null && $search !== '') {
@@ -79,6 +84,7 @@ class DocumentController extends Controller
         $documentDetail->document_id = $request['document_id'];
         $documentDetail->user_id= $request['user_id'];
         $documentDetail->title = $request['title'];
+        $documentDetail->salt = $request['salt'];
         $documentDetail->password = $request['password'];
         $documentDetail->save();
 
@@ -91,7 +97,7 @@ class DocumentController extends Controller
             'message' => 'Document and Document Detail inserted successfully',
             'document' => new DocumentResource($documentDetail),
             'documentDetail' => new DocumentDetailResource($document),
-        ], 201);
+        ], 200);
     }
 
     public function sendOtp(Request $request){
@@ -103,7 +109,7 @@ class DocumentController extends Controller
             if($documentData->user_id != $request['user_id']) return response()->json("User bukan owner dari dokumen", 404);
         }
 
-        $user = User::where('google_id', $request['user_id'])->first();
+        $user = User::where('user_id', $request['user_id'])->first();
 
         do{
             $otp = substr(str_shuffle(str_repeat('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 6)), 0, 6);
@@ -118,10 +124,31 @@ class DocumentController extends Controller
             'document_id' => $request['document_id'],
             'user_id' => $request['user_id'],
             'otp' => $otp,
+            'type' => $request['type'],
             'expired_at' => now()->addMinutes(10),
         ]);
 
         return response()->json("OTP sent and saved successfully", 200);
+    }
+
+    public function sendEmailVerification(Request $request){
+        do{
+            $otp = substr(str_shuffle(str_repeat('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 6)), 0, 6);
+            $otpExist = OTP::where('otp', $otp)->where('expired_at', '>', now())->first();
+        }while($otpExist != null);
+
+        $user = User::where('email', $request['email'])->first();
+
+        Mail::to($request['email'])->send(new sendEmail($request['name'], $otp, '', $request['type']));
+
+        $otp_id = Str::uuid();
+        OTP::create([
+            'otp_id' => $otp_id, 
+            'user_id' => $user->user_id,
+            'otp' => $otp,
+            'type' => $request['type'],
+            'expired_at' => now()->addMinutes(10),
+        ]);
     }
 
     public function verifyOtp(Request $request){
@@ -140,6 +167,23 @@ class DocumentController extends Controller
         $otp->delete();
 
         return response()->json("OTP berhasil diverifikasi", 200);
+    }
+
+    public function verifyEmail(Request $request){
+        $user = User::where('email', $request['email'])->first();
+
+        if($user == null) return response()->json("Email tidak ditemukan", 404);
+
+        $otp = OTP::where('user_id', $user->user_id)->where('otp', $request['otp'])
+        ->where('expired_at', '>', now())->first();
+
+        if($otp == null) return response()->json("OTP salah", 401);
+
+        $otp->delete();
+        $user->email_verified_at = now();
+        $user->save();
+
+        return response()->json("Email berhasil diverifikasi", 200);
     }
 
     public function resetPassword(Request $request){

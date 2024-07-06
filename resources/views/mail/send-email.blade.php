@@ -60,6 +60,9 @@
                 <h1 class="greeting">Hello, {{$name}}</h1>
                 <p>We received a request to reset the password for your CipherDocs document titled "{{$title}}".</p>
                 <p>To complete the password reset process, please use the verification code provided above.</p>
+            @elseif($type = 'verifikasi')
+                <h1 class="greeting">Hello, {{$name}}</h1>
+                <p>To complete the access process, please use the verification code provided above.</p>
             @else
                 <h1 class="greeting">Hello, {{$name}}</h1>
                 <p>We received a request to access the document titled "{{$title}}".</p>

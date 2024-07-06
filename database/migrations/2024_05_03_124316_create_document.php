@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->uuid('document_id')->primary();
-            $table->string('user_id');
+            $table->uuid('user_id');
             $table->string('title');
             $table->string('password');
+            $table->string("salt")->nullable();
             $table->timestamps();
 
-            $table->foreign('user_id')->references('google_id')->on('users');
+            $table->foreign('user_id')->references('user_id')->on('users');
         });
     }
 

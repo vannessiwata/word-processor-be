@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('one_time_password', function (Blueprint $table) {
             $table->uuid('otp_id')->primary();
-            $table->uuid('document_id');
+            $table->uuid('document_id')->nullable();
             $table->uuid('user_id');
             $table->string('otp');
             $table->string('type');
             $table->timestamp('expired_at');
             $table->timestamps();
 
-            $table->foreign('user_id')->references('google_id')->on('users');
+            $table->foreign('user_id')->references('user_id')->on('users');
             $table->foreign('document_id')->references('document_id')->on('documents');
         });
     }

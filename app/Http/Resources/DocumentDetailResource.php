@@ -21,6 +21,7 @@ class DocumentDetailResource extends JsonResource
             'content' => $this->content,
             'password' => $this->docTitle->password,
             'owner' => $this->docTitle->user_id,
+            'salt' => $this->docTitle->salt,
             'created_at' => Carbon::parse($this->created_at)->format('Y-m-d'),
         ];
     }

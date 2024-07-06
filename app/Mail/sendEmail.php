@@ -37,7 +37,7 @@ class sendEmail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.test-email',
+            view: 'mail.send-email',
             with: ['name' => $this->name, 'code' => $this->code, 'title' => $this->title, 'type' => $this->type],
         );
     }

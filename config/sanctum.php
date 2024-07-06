@@ -63,7 +63,7 @@ return [
 
     'token_prefix' => env('SANCTUM_TOKEN_PREFIX', ''),
 
-    'expiration' => 10,
+    'expiration' => 60,
 
     /*
     |--------------------------------------------------------------------------
